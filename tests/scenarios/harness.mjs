@@ -90,7 +90,22 @@ export function runAgent(agent, dir, prompt) {
   let error = null;
   if (r.error) error = r.error.code === 'ETIMEDOUT' ? 'timed out after 15 minutes' : r.error.message;
   else if (r.status !== 0) error = `agent exited ${r.status}`;
+  else error = agentFailure(agent, stdout);
   return { code: r.status, stdout, stderr: r.stderr ?? '', error, finalMessage: finalMessage(agent, stdout) };
+}
+
+/** Why a claude JSON result is a failed run (is_error, error subtype), or null. */
+export function agentFailure(agent, stdout) {
+  if (agent !== 'claude') return null;
+  try {
+    const parsed = JSON.parse(stdout);
+    const last = Array.isArray(parsed) ? parsed.findLast((e) => e?.type === 'result') : parsed;
+    if (last?.is_error === true) return `claude reported is_error: ${String(last.result ?? last.subtype ?? '').slice(0, 200)}`;
+    if (typeof last?.subtype === 'string' && last.subtype.startsWith('error')) return `claude ended with ${last.subtype}`;
+  } catch {
+    // not JSON: nothing to report here
+  }
+  return null;
 }
 
 /** Extracts the agent's last message from its JSON (claude) or JSONL (codex) output. */
@@ -99,11 +114,10 @@ export function finalMessage(agent, stdout) {
     try {
       const parsed = JSON.parse(stdout);
       const last = Array.isArray(parsed) ? parsed.findLast((e) => typeof e?.result === 'string') : parsed;
-      if (typeof last?.result === 'string') return last.result;
+      return typeof last?.result === 'string' ? last.result : '';
     } catch {
-      // fall through to the raw output
+      return stdout; // not JSON at all: keep the raw text
     }
-    return stdout;
   }
   let last = null;
   for (const line of stdout.split(/\r?\n/)) {
@@ -211,7 +225,8 @@ export function sharedAssertions(dir, { baseline } = {}) {
 
 /** All failures for one scenario run: its own assertions, the shared ones, then validate.mjs. */
 export function evaluate(scenario, dir, message, baseline) {
-  const failures = [...scenario.assert(dir, message), ...sharedAssertions(dir, { baseline })];
+  const failures = message.trim() ? [] : ['final message is empty: the run produced no answer'];
+  failures.push(...scenario.assert(dir, message), ...sharedAssertions(dir, { baseline }));
   if (scenario.validate !== false) {
     const v = runValidate(dir, []);
     if (v.code !== 0) {

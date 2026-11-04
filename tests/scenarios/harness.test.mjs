@@ -5,8 +5,8 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { ROOT, commitAll, makeRepo } from '../helpers.mjs';
-import { agentCommand, buildSpawn, finalMessage, sharedAssertions } from './harness.mjs';
+import { ROOT, commitAll, copyFixture, makeRepo } from '../helpers.mjs';
+import { agentCommand, agentFailure, buildSpawn, commitCount, evaluate, finalMessage, sharedAssertions } from './harness.mjs';
 import { SCENARIOS } from './scenarios.mjs';
 
 const CLAUDE_EXE = String.raw`C:\bin\claude.exe`;
@@ -124,4 +124,35 @@ test('--dry-run prints commands and bills nothing', { timeout: 300_000 }, async 
   assert.doesNotMatch(r.stdout, /unavailable/, 'no agent binary may be spawned, not even for --version');
   const after = existsSync(resultsDir) ? await readdir(resultsDir) : [];
   assert.deepEqual(after, before, 'a dry run writes no results');
+});
+
+const scenario = (id) => SCENARIOS.find((s) => s.id === id);
+
+test('a no-op run cannot pass library or conflicting', async () => {
+  for (const id of ['library', 'conflicting']) {
+    const dir = await copyFixture(scenario(id).fixture);
+    const failures = scenario(id).assert(dir, 'I did nothing but mention a conflict');
+    assert.ok(failures.length > 0, `${id} passes on an untouched workspace`);
+    assert.match(failures.join(' '), /ai-memory\.md|AGENTS\.md/);
+  }
+});
+
+test('an empty final message fails even a scenario that expects no changes', async () => {
+  for (const id of ['plan-only', 'empty-no-answers']) {
+    const dir = await copyFixture(scenario(id).fixture);
+    const failures = evaluate(scenario(id), dir, '   ', commitCount(dir));
+    assert.match(failures.join(' '), /empty/i, id);
+  }
+});
+
+test('claude error JSON is a failed run, not a message', () => {
+  const budget = JSON.stringify({ type: 'result', subtype: 'error_max_budget_usd', is_error: false, total_cost_usd: 5 });
+  const failed = JSON.stringify({ type: 'result', subtype: 'success', is_error: true, result: 'API error' });
+  const ok = JSON.stringify({ type: 'result', subtype: 'success', is_error: false, result: 'done' });
+  assert.match(agentFailure('claude', budget), /error_max_budget_usd/);
+  assert.match(agentFailure('claude', failed), /is_error/);
+  assert.equal(agentFailure('claude', ok), null);
+  assert.equal(finalMessage('claude', budget), '');
+  assert.equal(finalMessage('claude', JSON.stringify({ type: 'result' })), '');
+  assert.equal(agentFailure('codex', '{}'), null);
 });

@@ -65,7 +65,10 @@ export const SCENARIOS = [
     id: 'library',
     fixture: 'library',
     prompt: 'Apply.',
-    assert: (dir) => mustNotExist(dir, ['docs/ai/design-system.md', 'docs/ai/personas.md']),
+    assert: (dir) => [
+      ...mustExist(dir, ['AGENTS.md', 'CLAUDE.md', 'docs/ai/ai-memory.md']),
+      ...mustNotExist(dir, ['docs/ai/design-system.md', 'docs/ai/personas.md']),
+    ],
   },
   {
     id: 'legacy',
@@ -116,6 +119,7 @@ export const SCENARIOS = [
     assert: (dir, message) => {
       const both = `${read(dir, 'AGENTS.md')}\n${read(dir, 'CLAUDE.md')}`;
       return [
+        ...mustExist(dir, ['docs/ai/ai-memory.md']), // proof the agent ran
         ...mustContain(both, 'CONFLICT-A', 'AGENTS.md and CLAUDE.md'),
         ...mustContain(both, 'CONFLICT-B', 'AGENTS.md and CLAUDE.md'),
         ...mustMention(message, /conflict/i, 'the conflict'),
