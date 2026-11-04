@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseCliArgs } from './lib/cli.mjs';
 import { collectScopes, runCoreChecks } from './lib/checks-core.mjs';
+import { runDocChecks } from './lib/checks-docs.mjs';
 import { listFiles } from './lib/files.mjs';
 
 const USAGE = 'usage: validate.mjs <root> [--scope <path>] [--skip-claude-bridge]';
@@ -10,8 +11,10 @@ const { root, scopePath, flags } = parseCliArgs(process.argv.slice(2), { usage: 
 function main() {
   const { files } = listFiles(root);
   const scopes = collectScopes(root, scopePath, files);
-  const core = runCoreChecks({ root, scopes, skipClaudeBridge: flags.has('--skip-claude-bridge'), files });
-  const out = { schemaVersion: 1, errors: core.errors, warnings: core.warnings };
+  const ctx = { root, scopes, skipClaudeBridge: flags.has('--skip-claude-bridge'), files };
+  const core = runCoreChecks(ctx);
+  const docs = runDocChecks(ctx);
+  const out = { schemaVersion: 1, errors: [...core.errors, ...docs.errors], warnings: [...core.warnings, ...docs.warnings] };
   process.stdout.write(JSON.stringify(out));
   process.exitCode = out.errors.length > 0 ? 1 : 0;
 }
