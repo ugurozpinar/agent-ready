@@ -3,6 +3,7 @@ import { statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isSourceFile, listFiles } from './lib/files.mjs';
 import { gitInfo } from './lib/git.mjs';
+import { analyzeScope, detectPackageManager, detectPublishedDocs } from './lib/scope.mjs';
 import { detectWorkspaces } from './lib/workspaces.mjs';
 
 const USAGE = 'usage: detect.mjs <root>';
@@ -37,11 +38,14 @@ function main() {
   const info = gitInfo(root);
   const hasSource = listing.files.some(isSourceFile);
   const ws = detectWorkspaces(root, listing.files);
-  const countIn = (dir) => listing.files.filter((f) => f.startsWith(`${dir}/`)).length;
-  const scopes = [
-    { path: '.', files: listing.files.length },
-    ...ws.members.map((path) => ({ path, files: countIn(path) })),
-  ];
+  const paths = ['.', ...ws.members];
+  const packageManager = detectPackageManager(listing.files);
+  const scopeWarnings = [];
+  const scopes = paths.slice(0, MAX_SCOPES).map((path) => {
+    const { warnings, ...scope } = analyzeScope(root, path, listing.files, { packageManager });
+    scopeWarnings.push(...warnings);
+    return scope;
+  });
 
   const out = {
     schemaVersion: 1,
@@ -52,10 +56,10 @@ function main() {
     },
     state: ws.members.length > 0 ? 'monorepo' : hasSource ? 'single' : 'empty',
     recommendedStrategy: ws.members.length >= 2 || listing.tracked >= 1000 ? 'parallel' : 'inline',
-    workspaces: { tool: ws.tool, total: ws.members.length, truncated: scopes.length > MAX_SCOPES },
-    publishedDocsSite: null,
-    scopes: scopes.slice(0, MAX_SCOPES),
-    warnings: [...new Set([...listing.warnings, ...ws.warnings])],
+    workspaces: { tool: ws.tool, total: ws.members.length, truncated: paths.length > MAX_SCOPES },
+    publishedDocsSite: detectPublishedDocs(root, listing.files),
+    scopes,
+    warnings: [...new Set([...listing.warnings, ...ws.warnings, ...scopeWarnings])],
   };
   process.stdout.write(JSON.stringify(out));
 }

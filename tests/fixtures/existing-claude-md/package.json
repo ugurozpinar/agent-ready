@@ -1,0 +1,1 @@
+{"name":"existing-claude-md","private":true,"scripts":{"test":"node --test"}}

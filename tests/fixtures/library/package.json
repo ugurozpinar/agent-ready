@@ -1,0 +1,7 @@
+{
+  "name": "library",
+  "version": "1.0.0",
+  "exports": { ".": "./dist/index.js" },
+  "scripts": { "test": "vitest run", "build": "tsc" },
+  "devDependencies": { "typescript": "^5.5.0" }
+}
