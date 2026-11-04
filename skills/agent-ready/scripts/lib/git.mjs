@@ -42,18 +42,31 @@ export function listGitFiles(root) {
   };
 }
 
+/** Repo state without listing files; callers list once through listFiles. */
 export function gitInfo(root) {
   const inside = git(root, ['rev-parse', '--is-inside-work-tree']);
-  if (!inside.ok || inside.stdout.trim() !== 'true') {
-    return { isRepo: false, head: null, trackedFiles: 0 };
-  }
+  if (!inside.ok || inside.stdout.trim() !== 'true') return { isRepo: false, head: null };
   const head = git(root, ['rev-parse', 'HEAD']);
-  const listing = listGitFiles(root);
-  return {
-    isRepo: true,
-    head: head.ok ? head.stdout.trim() : null,
-    trackedFiles: listing ? listing.tracked : 0,
-  };
+  return { isRepo: true, head: head.ok ? head.stdout.trim() : null };
+}
+
+const HEX_COMMIT = /^[0-9a-f]{4,64}$/i;
+
+/** Files changed between `commit` and HEAD. Null when the commit is unknown. */
+export function changedFiles(root, commit) {
+  if (!HEX_COMMIT.test(commit)) return null;
+  if (!git(root, ['cat-file', '-e', `${commit}^{commit}`]).ok) return null;
+  const diff = git(root, ['diff', '--name-only', '-z', commit, 'HEAD', '--']);
+  return diff.ok ? splitZ(diff.stdout) : null;
+}
+
+/** Commits per file over the last 90 days, from one git call. Empty without history. */
+export function commitCounts(root) {
+  const counts = new Map();
+  const log = git(root, ['log', '--since=90.days', '--name-only', '-z', '--format=']);
+  if (!log.ok) return counts;
+  for (const path of splitZ(log.stdout)) counts.set(path, (counts.get(path) ?? 0) + 1);
+  return counts;
 }
 
 export function isIgnored(root, path) {

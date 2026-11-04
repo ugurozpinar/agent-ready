@@ -12,6 +12,7 @@ const SCRIPT_NAMES = ['test', 'lint', 'build', 'dev', 'start', 'typecheck', 'for
 const INSTRUCTION_FILES = ['AGENTS.md', 'CLAUDE.md', '.claude/CLAUDE.md', 'CLAUDE.local.md',
   'AGENTS.override.md', '.cursorrules', '.github/copilot-instructions.md'];
 const DOC_PREFIXES = ['readme', 'contributing', 'architecture'];
+const MAX_COMMAND_LENGTH = 200;
 const ADR_DIRS = ['docs/adr/', 'docs/decisions/', 'adr/'];
 
 const SITE_CONFIGS = [
@@ -66,7 +67,7 @@ function ciCommands(root, files) {
       if (!m) continue;
       const value = m[1].replace(/^(["'])(.*)\1$/, '$2');
       if (/^[|>][+-]?\d*$/.test(value) || value.startsWith('#')) continue;
-      out.push({ name: 'ci', command: value, source: file });
+      out.push({ name: 'ci', command: value.slice(0, MAX_COMMAND_LENGTH), source: file });
     }
   }
   return out;
