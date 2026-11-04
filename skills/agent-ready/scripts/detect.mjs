@@ -3,8 +3,10 @@ import { statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isSourceFile, listFiles } from './lib/files.mjs';
 import { gitInfo } from './lib/git.mjs';
+import { detectWorkspaces } from './lib/workspaces.mjs';
 
 const USAGE = 'usage: detect.mjs <root>';
+const MAX_SCOPES = 25;
 
 function fail(message) {
   process.stderr.write(`${message}\n${USAGE}\n`);
@@ -34,6 +36,12 @@ function main() {
   const listing = listFiles(root);
   const info = gitInfo(root);
   const hasSource = listing.files.some(isSourceFile);
+  const ws = detectWorkspaces(root, listing.files);
+  const countIn = (dir) => listing.files.filter((f) => f.startsWith(`${dir}/`)).length;
+  const scopes = [
+    { path: '.', files: listing.files.length },
+    ...ws.members.map((path) => ({ path, files: countIn(path) })),
+  ];
 
   const out = {
     schemaVersion: 1,
@@ -42,12 +50,12 @@ function main() {
       head: info.head,
       trackedFiles: listing.source === 'git' ? listing.tracked : 0,
     },
-    state: hasSource ? 'single' : 'empty',
-    recommendedStrategy: listing.tracked >= 1000 ? 'parallel' : 'inline',
-    workspaces: { tool: null, total: 0, truncated: false },
+    state: ws.members.length > 0 ? 'monorepo' : hasSource ? 'single' : 'empty',
+    recommendedStrategy: ws.members.length >= 2 || listing.tracked >= 1000 ? 'parallel' : 'inline',
+    workspaces: { tool: ws.tool, total: ws.members.length, truncated: scopes.length > MAX_SCOPES },
     publishedDocsSite: null,
-    scopes: [{ path: '.', files: listing.files.length }],
-    warnings: [...listing.warnings],
+    scopes: scopes.slice(0, MAX_SCOPES),
+    warnings: [...new Set([...listing.warnings, ...ws.warnings])],
   };
   process.stdout.write(JSON.stringify(out));
 }
