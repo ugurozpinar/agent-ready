@@ -44,7 +44,7 @@ test('agentCommand builds the exact flags', () => {
     });
     assert.deepEqual(agentCommand('codex', '/w', 'Apply.'), {
       bin: 'codex',
-      args: ['exec', '-C', '/w', '-s', 'workspace-write', '--skip-git-repo-check', '--ephemeral', '--json',
+      args: ['exec', '-C', '/w', '-s', 'workspace-write', '--skip-git-repo-check', '--json',
         '$agent-ready Apply.'],
     });
     assert.equal(agentCommand('claude', '/w', '').args[1], '/agent-ready');
@@ -104,6 +104,26 @@ test('shared assertions', async () => {
   await writeFile(join(dir, 'AGENTS.md'), 'clean\n');
   commitAll(dir, 'skill committed');
   assert.match(sharedAssertions(dir, { baseline }).join('\n'), /commit/i);
+});
+
+test('shared assertions fail on host leakage in generated files only', async () => {
+  const dir = await makeRepo({ 'README.md': 'rtk is mentioned here\n' }, { git: true });
+  const baseline = 1;
+  await writeFile(join(dir, 'AGENTS.md'), '# App\n\n## Rules\n- Run `npm test` before finishing.\n');
+  assert.deepEqual(sharedAssertions(dir, { baseline }), []);
+
+  await writeFile(join(dir, 'AGENTS.md'),
+    "## Rules\n- Prefix shell commands with `rtk`, as required by the user's external RTK instructions.\n");
+  const bad = sharedAssertions(dir, { baseline }).join('\n');
+  assert.match(bad, /AGENTS\.md/);
+  assert.match(bad, /host/i);
+
+  for (const leak of ['see ~/.claude/CLAUDE.md', 'see ~/.codex/config.toml', 'External Instructions apply']) {
+    await writeFile(join(dir, 'AGENTS.md'), `${leak}\n`);
+    assert.match(sharedAssertions(dir, { baseline }).join('\n'), /AGENTS\.md/, leak);
+  }
+  await writeFile(join(dir, 'AGENTS.md'), 'The rtkit library and external API docs.\n');
+  assert.deepEqual(sharedAssertions(dir, { baseline }), []);
 });
 
 test('--dry-run prints commands and bills nothing', { timeout: 300_000 }, async () => {

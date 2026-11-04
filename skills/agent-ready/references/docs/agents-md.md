@@ -33,6 +33,7 @@ Any rule agents must follow that the code does not show?
 - File tree and stack lists
 - Style that a linter or formatter enforces
 - Generic advice such as "write clean code" or "add tests"
+- Instructions from your own user-level or global configuration, session, or tooling; only repository facts and the user's answers belong here
 
 ## Good example
 This example shows shape only. Its facts are invented, and nothing from it may be reused.

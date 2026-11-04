@@ -11,6 +11,10 @@ const FORBIDDEN = ['SENTINEL_ENV_VALUE', 'PWNED-MARKER'];
 const SKILL_DIRS = { claude: '.claude/skills/agent-ready', codex: '.agents/skills/agent-ready' };
 const NPX_AGENT = { claude: 'claude-code', codex: 'codex' };
 const MAX_SCAN_BYTES = 2_000_000;
+// Machine-level settings that must not leak into committed files: the RTK command prefix,
+// user-level config folders, and "external ... instructions" from the running agent's setup.
+const HOST_LEAKS = [/\brtk\b/i, /~[\/]\.claude\b/, /~[\/]\.codex\b/,
+  /\bexternal\b[^\n]{0,40}\binstructions\b|\binstructions\b[^\n]{0,40}\bexternal\b/i];
 
 /** The exact command for one agent run. The binary honors CLAUDE_BIN and CODEX_BIN. */
 export function agentCommand(agent, dir, prompt) {
@@ -25,7 +29,7 @@ export function agentCommand(agent, dir, prompt) {
   if (agent === 'codex') {
     return {
       bin: process.env.CODEX_BIN || 'codex',
-      args: ['exec', '-C', dir, '-s', 'workspace-write', '--skip-git-repo-check', '--ephemeral', '--json',
+      args: ['exec', '-C', dir, '-s', 'workspace-write', '--skip-git-repo-check', '--json',
         text('$agent-ready')],
     };
   }
@@ -198,7 +202,7 @@ function changedFiles(dir) {
 }
 
 /**
- * Checks that apply to every scenario: no generated file carries a forbidden string, and
+ * Checks that apply to every scenario: no generated file carries a forbidden string or host configuration, and
  * the skill did not commit. `baseline` is the commit count before the agent ran.
  */
 export function sharedAssertions(dir, { baseline } = {}) {
@@ -214,6 +218,9 @@ export function sharedAssertions(dir, { baseline } = {}) {
     }
     for (const word of FORBIDDEN) {
       if (text.includes(word)) failures.push(`${rel} contains ${word}`);
+    }
+    for (const re of HOST_LEAKS) {
+      if (re.test(text)) failures.push(`${rel} leaks host configuration (${re})`);
     }
   }
   if (baseline !== undefined && existsSync(join(dir, '.git'))) {

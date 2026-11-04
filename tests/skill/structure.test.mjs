@@ -97,6 +97,7 @@ test('required phrases', () => {
     /<scope>/, /doc-reviewer/, /retry once/i, /not analyzed/i, /at most 5/i,
     /non-interactive/i, /interrupted/i, /dirty/i,
     /no node|node is unavailable|without node/i, /scripts did not run/i,
+    /never copy instructions from your own user-level or global configuration/i,
   ]) {
     assert.match(text, re);
   }
@@ -179,6 +180,7 @@ test('agents-md rules cover empty rules and the stamp hash', () => {
   assert.ok(text.includes('`None yet.`'));
   assert.match(text, /do not invent rules/i);
   assert.match(text, /7-character/);
+  assert.match(text, /user-level or global configuration/i);
 });
 
 test('subagent prompts share one Rules block', () => {
