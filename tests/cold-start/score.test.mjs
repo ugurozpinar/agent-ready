@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
-import { FACTS, QUESTIONS, score, tokenUsage } from './questions.mjs';
+import { fileURLToPath } from 'node:url';
+import { FACTS, QUESTIONS, assertNoErrors, score, sessionError, tokenUsage } from './questions.mjs';
 
 // Builds results where the first `withN` / `withoutN` questions are answered correctly.
 const results = (withN, withoutN, { missWith = [] } = {}) => QUESTIONS.map((q, i) => ({
@@ -73,4 +75,38 @@ test('run.mjs --dry-run prints the plan and spawns no agent', async () => {
   }
   const bad = spawnSync(process.execPath, [run, '--agent', 'nope'], { encoding: 'utf8' });
   assert.equal(bad.status, 2);
+});
+
+test('errored sessions fail the run instead of scoring as wrong', () => {
+  assertNoErrors([{ id: 'currency', errors: [] }]);
+  assert.throws(() => assertNoErrors([{ id: 'currency', errors: ['agent exited 1'] }]), /currency: agent exited 1/);
+});
+
+test('sessionError reports spawn errors, exit codes and claude is_error', () => {
+  const ok = JSON.stringify({ type: 'result', result: 'x' });
+  assert.equal(sessionError('claude', { status: 0, stdout: ok }), null);
+  assert.match(sessionError('claude', { error: new Error('boom'), status: null, stdout: '' }), /boom/);
+  assert.match(sessionError('codex', { status: 3, stdout: '' }), /exited 3/);
+  const bad = JSON.stringify({ type: 'result', is_error: true, result: 'rate limited' });
+  assert.match(sessionError('claude', { status: 0, stdout: bad }), /is_error: rate limited/);
+});
+
+test('question sessions are read-only with no duplicated flags', () => {
+  const run = fileURLToPath(new URL('./run.mjs', import.meta.url));
+  const out = (agent) => spawnSync(process.execPath, [run, '--agent', agent, '--dry-run'], { encoding: 'utf8' }).stdout;
+  const questions = (text) => text.split(/\r?\n/).filter((l) => /\((with files|baseline)\)/.test(l));
+  const claude = questions(out('claude'));
+  assert.equal(claude.length, 10);
+  for (const l of claude) {
+    assert.equal(l.match(/--permission-mode/g).length, 1);
+    assert.match(l, /--permission-mode plan/);
+    assert.doesNotMatch(l, /acceptEdits/);
+  }
+  const codex = questions(out('codex'));
+  for (const l of codex) {
+    assert.equal(l.match(/ -s /g).length, 1);
+    assert.match(l, / -s read-only /);
+    assert.doesNotMatch(l, /workspace-write/);
+  }
+  assert.match(out('claude'), /acceptEdits/); // the generation run still may edit
 });

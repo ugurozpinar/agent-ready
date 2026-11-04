@@ -1,3 +1,5 @@
+import { agentFailure } from '../scenarios/harness.mjs';
+
 // Prompts here pass through cmd.exe on Windows: no double quotes, percent signs, or newlines.
 export const FACTS = "Invoices stay in EUR only because finance reconciliation is EUR-only until 2027. User-facing copy never uses the word 'simply'.";
 
@@ -52,4 +54,17 @@ export function tokenUsage(agent, stdout) {
     }
   }
   return total;
+}
+
+/** Why a finished question session is not a usable measurement, or null. */
+export function sessionError(agent, { error, status, stdout }) {
+  if (error) return error.message ?? String(error);
+  if (status !== 0) return `agent exited ${status}`;
+  return agentFailure(agent, stdout ?? '');
+}
+
+/** An errored session is not a wrong answer: fail the whole run rather than score it. */
+export function assertNoErrors(rows) {
+  const errors = rows.flatMap((r) => r.errors.map((e) => `${r.id}: ${e}`));
+  if (errors.length) throw new Error(`question sessions failed, nothing was measured:\n  ${errors.join('\n  ')}`);
 }
