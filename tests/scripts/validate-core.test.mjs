@@ -104,16 +104,6 @@ test('claude bridge applies to every scope', async () => {
   assert.equal(runValidate(dir, ['--skip-claude-bridge']).code, 0);
 });
 
-test('claude bridge applies to every scope', async () => {
-  const { 'packages/web/CLAUDE.md': _, ...member } = pkg();
-  const dir = await makeRepo({ ...MONO, ...base({ 'AGENTS.md': COVERED }), ...member });
-  const r = runValidate(dir);
-  assert.deepEqual(ids(r), ['claude-bridge']);
-  assert.equal(r.json.errors[0].file, 'packages/web/CLAUDE.md');
-  assert.deepEqual(ids(runValidate(dir, ['--scope', 'packages/web'])), ['claude-bridge']);
-  assert.equal(runValidate(dir, ['--skip-claude-bridge']).code, 0);
-});
-
 test('--skip-claude-bridge', async () => {
   const dir = await makeRepo({ 'AGENTS.md': `# P\n\n${STAMP}\n` });
   assert.equal(runValidate(dir, ['--skip-claude-bridge']).code, 0);
