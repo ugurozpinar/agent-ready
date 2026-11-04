@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { statSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { join } from 'node:path';
+import { parseCliArgs } from './lib/cli.mjs';
 import { isSourceFile, listFiles, readText } from './lib/files.mjs';
 import { changedFiles, commitCounts, gitInfo, inAgentDir } from './lib/git.mjs';
 import { analyzeScope, detectPackageManager, detectPublishedDocs } from './lib/scope.mjs';
@@ -13,47 +13,7 @@ const HOT_DIRS = 5;
 const TOP_CHANGED = 5;
 const TOP_CHANGED_DETAIL = 50;
 
-function fail(message) {
-  process.stderr.write(`${message}\n${USAGE}\n`);
-  process.exit(2);
-}
-
-function isDirectory(path) {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
-  }
-}
-
-function parseArgs(argv) {
-  const positional = [];
-  let scope = null;
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    if (arg === '--scope') {
-      i++;
-      if (i >= argv.length || argv[i].startsWith('-')) fail('--scope needs a path');
-      scope = argv[i];
-    } else if (arg.startsWith('-')) {
-      fail(`unknown option: ${arg}`);
-    } else {
-      positional.push(arg);
-    }
-  }
-  if (positional.length !== 1) fail('expected exactly one root path');
-  const root = resolve(positional[0]);
-  if (!isDirectory(root)) fail(`not a directory: ${positional[0]}`);
-  let scopePath = null;
-  if (scope !== null) {
-    const abs = resolve(root, scope.replaceAll('\\', '/'));
-    const rel = relative(root, abs);
-    if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) fail(`scope is outside the root: ${scope}`);
-    if (!isDirectory(abs)) fail(`scope is not a directory: ${scope}`);
-    scopePath = rel.split(sep).join('/') || '.';
-  }
-  return { root, scopePath };
-}
+const { root, scopePath } = parseCliArgs(process.argv.slice(2), { usage: USAGE });
 
 const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -89,7 +49,6 @@ function hotDirs(files, prefix, counts) {
 }
 
 function main() {
-  const { root, scopePath } = parseArgs(process.argv.slice(2));
   const listing = listFiles(root);
   const info = gitInfo(root);
   const hasSource = listing.files.some(isSourceFile);
