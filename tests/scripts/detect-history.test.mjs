@@ -198,3 +198,22 @@ test('generated legacy repo', { timeout: 120_000 }, async () => {
   assert.equal(json.recommendedStrategy, 'parallel');
   assert.equal(json.scopes[0].hotDirs[0], 'src/billing');
 });
+
+test('root inside a larger repository reports root-relative history', async () => {
+  const dir = await makeRepo({
+    'sub/src/billing/a.js': '1', 'sub/src/core/b.js': '1', 'outside/o.js': '1',
+  }, { git: true });
+  const sha = git(dir, ['rev-parse', 'HEAD']).stdout.trim();
+  writeFileSync(join(dir, 'sub/AGENTS.md'), `# P\n\n${stampLine(sha)}\n`);
+  writeFileSync(join(dir, 'sub/src/billing/a.js'), '2');
+  writeFileSync(join(dir, 'sub/src/billing/c.js'), '');
+  writeFileSync(join(dir, 'outside/o.js'), '2');
+  commitAll(dir, 'later');
+  writeFileSync(join(dir, 'sub/src/billing/a.js'), '3');
+  writeFileSync(join(dir, 'outside/o.js'), '3');
+  commitAll(dir, 'later again');
+  const s = runDetect(join(dir, 'sub')).json.scopes[0];
+  assert.deepEqual(s.changedSinceStamp.top.sort(), ['AGENTS.md', 'src/billing/a.js', 'src/billing/c.js']);
+  assert.equal(s.changedSinceStamp.files, 3);
+  assert.deepEqual(s.hotDirs, ['src/billing', 'src/core']);
+});

@@ -56,14 +56,14 @@ const HEX_COMMIT = /^[0-9a-f]{4,64}$/i;
 export function changedFiles(root, commit) {
   if (!HEX_COMMIT.test(commit)) return null;
   if (!git(root, ['cat-file', '-e', `${commit}^{commit}`]).ok) return null;
-  const diff = git(root, ['diff', '--name-only', '-z', commit, 'HEAD', '--']);
+  const diff = git(root, ['diff', '--name-only', '--relative', '-z', commit, 'HEAD', '--']);
   return diff.ok ? splitZ(diff.stdout) : null;
 }
 
 /** Commits per file over the last 90 days, from one git call. Empty without history. */
 export function commitCounts(root) {
   const counts = new Map();
-  const log = git(root, ['log', '--since=90.days', '--name-only', '-z', '--format=']);
+  const log = git(root, ['log', '--since=90.days', '--name-only', '--relative', '-z', '--format=']);
   if (!log.ok) return counts;
   for (const path of splitZ(log.stdout)) counts.set(path, (counts.get(path) ?? 0) + 1);
   return counts;
