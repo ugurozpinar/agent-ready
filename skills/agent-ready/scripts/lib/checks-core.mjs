@@ -43,26 +43,26 @@ function chainTexts(root, path) {
   return texts.filter((t) => t !== null);
 }
 
-function bridgeFinding(root, rootText) {
-  const file = 'CLAUDE.md';
+function bridgeFinding(root, prefix) {
+  const file = `${prefix}CLAUDE.md`;
   const abs = join(root, file);
   let stat;
   try {
     stat = lstatSync(abs);
   } catch {
-    return { check: 'claude-bridge', file, message: 'CLAUDE.md is missing; add a line `@AGENTS.md` or symlink it to AGENTS.md' };
+    return { check: 'claude-bridge', file, message: `${file} is missing; add a line @AGENTS.md or symlink it to AGENTS.md` };
   }
   if (stat.isSymbolicLink()) {
     try {
-      if (realpathSync(abs) === realpathSync(join(root, 'AGENTS.md'))) return null;
+      if (realpathSync(abs) === realpathSync(join(root, `${prefix}AGENTS.md`))) return null;
     } catch {
       /* dangling link: fall through to the finding */
     }
-    return { check: 'claude-bridge', file, message: 'CLAUDE.md is a symlink that does not point to AGENTS.md' };
+    return { check: 'claude-bridge', file, message: `${file} is a symlink that does not point to AGENTS.md` };
   }
   const text = readText(abs);
   if (text !== null && BRIDGE.test(text)) return null;
-  return { check: 'claude-bridge', file, message: 'CLAUDE.md does not import AGENTS.md; add a line `@AGENTS.md`' };
+  return { check: 'claude-bridge', file, message: `${file} does not import AGENTS.md; add a line @AGENTS.md` };
 }
 
 /** Inline-code tokens of the root `AGENTS.md`, as paths without a leading `./` or trailing `/`. */
@@ -95,6 +95,11 @@ export function runCoreChecks(ctx) {
 
     if (!parseStamp(text)) error('stamp', scope.agentsPath, 'last non-empty line must be `<!-- agent-ready: v=<version> commit=<sha|none> -->`');
 
+    if (!ctx.skipClaudeBridge) {
+      const finding = bridgeFinding(ctx.root, prefixOf(scope.path));
+      if (finding) errors.push(finding);
+    }
+
     if (!isRoot && tokens !== null) {
       const covered = tokens.some((t) => [scope.path, scope.agentsPath].some((p) => t === p || matchGlob(t, p)));
       if (!covered) error('package-coverage', scope.agentsPath, `root AGENTS.md does not reference ${scope.path} in inline code`);
@@ -109,9 +114,5 @@ export function runCoreChecks(ctx) {
     }
   }
 
-  if (!ctx.skipClaudeBridge && ctx.scopes.some((s) => s.path === '.') && rootText !== null) {
-    const finding = bridgeFinding(ctx.root, rootText);
-    if (finding) errors.push(finding);
-  }
   return { errors, warnings };
 }

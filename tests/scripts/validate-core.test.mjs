@@ -11,6 +11,7 @@ const ids = (r) => r.json.errors.map((e) => e.check);
 const pkg = (body = '# Web') => ({
   'packages/web/package.json': '{"name":"web"}',
   'packages/web/AGENTS.md': `${body}\n\n${STAMP}\n`,
+  'packages/web/CLAUDE.md': '@AGENTS.md\n',
 });
 const MONO = { 'package.json': '{"private":true,"workspaces":["packages/*"]}' };
 const COVERED = '# P\n\nSee `packages/*/AGENTS.md`.\n\n' + STAMP + '\n';
@@ -56,7 +57,7 @@ test('chain budget', async () => {
   const KiB = 1024;
   const mk = (pkgBytes) =>
     makeRepo({ ...MONO, ...base({ 'AGENTS.md': sized(20 * KiB) }), 'packages/web/package.json': '{"name":"web"}',
-      'packages/web/AGENTS.md': sized(pkgBytes) });
+      'packages/web/AGENTS.md': sized(pkgBytes), 'packages/web/CLAUDE.md': '@AGENTS.md\n' });
   // root is not covered by reference, so only the budget ids matter here
   const withoutCoverage = (r) => ids(r).filter((c) => c !== 'package-coverage');
   assert.deepEqual(withoutCoverage(runValidate(await mk(12 * KiB))), []);
@@ -91,6 +92,26 @@ test('claude bridge', async () => {
     throw e;
   }
   assert.equal(runValidate(dir).code, 0);
+});
+
+test('claude bridge applies to every scope', async () => {
+  const { 'packages/web/CLAUDE.md': _, ...member } = pkg();
+  const dir = await makeRepo({ ...MONO, ...base({ 'AGENTS.md': COVERED }), ...member });
+  const r = runValidate(dir);
+  assert.deepEqual(ids(r), ['claude-bridge']);
+  assert.equal(r.json.errors[0].file, 'packages/web/CLAUDE.md');
+  assert.deepEqual(ids(runValidate(dir, ['--scope', 'packages/web'])), ['claude-bridge']);
+  assert.equal(runValidate(dir, ['--skip-claude-bridge']).code, 0);
+});
+
+test('claude bridge applies to every scope', async () => {
+  const { 'packages/web/CLAUDE.md': _, ...member } = pkg();
+  const dir = await makeRepo({ ...MONO, ...base({ 'AGENTS.md': COVERED }), ...member });
+  const r = runValidate(dir);
+  assert.deepEqual(ids(r), ['claude-bridge']);
+  assert.equal(r.json.errors[0].file, 'packages/web/CLAUDE.md');
+  assert.deepEqual(ids(runValidate(dir, ['--scope', 'packages/web'])), ['claude-bridge']);
+  assert.equal(runValidate(dir, ['--skip-claude-bridge']).code, 0);
 });
 
 test('--skip-claude-bridge', async () => {
