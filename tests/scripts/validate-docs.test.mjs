@@ -209,3 +209,12 @@ test('sk- inside a word is not a secret', async () => {
   const key = await check({ ...agents('Nothing.'), 'docs/ai/ai-memory.md': 'key sk-abcdefghijklmnopqrstuvwx\n' });
   assert.deepEqual(ids(key), ['secret']);
 });
+
+test('unfilled marker in a referenced ai-memory.md is an error', async () => {
+  const r = await check({
+    ...agents('See `docs/ai/ai-memory.md`.'),
+    'docs/ai/ai-memory.md': '# AI memory\n\n{{ar:x}}\n',
+  });
+  assert.deepEqual(ids(r), ['template-marker']);
+  assert.equal(r.code, 1);
+});

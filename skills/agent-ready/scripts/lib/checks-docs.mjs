@@ -251,6 +251,7 @@ export function runDocChecks(ctx) {
     const text = readText(abs(doc));
     const count = text === null ? 0 : countLines(text);
     if (count > MEMORY_LINES) warnings.push({ check: 'memory-budget', file: doc, message: `${count} lines, over the ${MEMORY_LINES}-line budget` });
+    for (const m of (text ?? '').matchAll(/\{\{ar:[^}\n]*\}\}/g)) error('template-marker', doc, `unfilled template marker ${m[0]}`);
   }
 
   const inGit = gitInfo(ctx.root).isRepo;

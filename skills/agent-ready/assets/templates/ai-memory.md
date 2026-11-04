@@ -9,13 +9,13 @@ What a senior developer new to this project needs to know and cannot get from th
 - **Maintain:** update an outdated entry instead of adding a contradicting one. Over budget, consolidate.
 - **Commit:** in the same change as the related work.
 
-Entry format, under the matching heading below. The invoice entry only shows the shape; keep one `Type`.
+Entry format, under the matching heading below. Keep one `Type`.
 
 ```markdown
-### 2026-11-04: Invoices stay in EUR only
+### YYYY-MM-DD: Short title
 Type: decision | constraint | trap | context | rejected
-Why: Finance reconciliation is EUR-only until the contract ends in 2027.
-Applies to: billing/
+Why: ...
+Applies to: ...
 ```
 
 ## Product and business context

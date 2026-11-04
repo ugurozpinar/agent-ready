@@ -90,10 +90,14 @@ test('ai-memory carries its rules and entry format', () => {
   for (const part of [
     '**Add:**', '**Do not add:**', '**Maintain:**', '**Commit:**',
     'Type: decision | constraint | trap | context | rejected',
-    'Why:', 'Applies to:',
+    '### YYYY-MM-DD: Short title',
+    'Why: ...',
+    'Applies to: ...',
   ]) {
     assert.ok(text.includes(part), part);
   }
+  assert.ok(!/EUR|invoice/i.test(text), 'the template must not carry a concrete fact');
+  assert.ok(!text.includes('{{ar:'), 'the template has no markers');
 });
 
 test('every rule file has its headings', () => {
