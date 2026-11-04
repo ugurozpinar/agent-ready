@@ -201,3 +201,11 @@ test('memory budget', async () => {
   assert.equal(over.code, 0);
   assert.deepEqual(over.json.warnings.map((w) => w.check), ['memory-budget']);
 });
+
+test('sk- inside a word is not a secret', async () => {
+  const prose = await check({ ...agents('Nothing.'), 'docs/ai/ai-memory.md': 'We use task-management-and-planning-system here.\n' });
+  assert.equal(prose.code, 0);
+  assert.deepEqual(prose.json.errors, []);
+  const key = await check({ ...agents('Nothing.'), 'docs/ai/ai-memory.md': 'key sk-abcdefghijklmnopqrstuvwx\n' });
+  assert.deepEqual(ids(key), ['secret']);
+});

@@ -16,7 +16,7 @@ const SECRET_PATTERNS = [
   ['aws-access-key', /AKIA[0-9A-Z]{16}/],
   ['github-token', /ghp_[A-Za-z0-9]{36}/],
   ['github-pat', /github_pat_[A-Za-z0-9_]{22,}/],
-  ['api-key-sk', /sk-[A-Za-z0-9_-]{20,}/],
+  ['api-key-sk', /(?<![A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}/],
   ['slack-token', /xox[baprs]-[A-Za-z0-9-]{10,}/],
   ['gitlab-token', /glpat-[A-Za-z0-9_-]{20,}/],
 ];
