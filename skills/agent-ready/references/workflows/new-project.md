@@ -2,6 +2,8 @@
 
 Applies when `detect.mjs` reports `state: empty`. The evidence is the interview, because there is no code.
 
+`state: empty` only means there is no source. If a hand-written `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `docs/ai/*.md`, or a file from an interrupted run exists, apply the Existing files table in [existing-repo](existing-repo.md), and interview only for what they leave open.
+
 ## Plan
 
 Ask the opening question before showing the plan, because the answer decides which documents to offer: "Describe the product and who it is for". It counts toward the question limit.

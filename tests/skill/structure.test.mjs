@@ -127,6 +127,42 @@ test('workflows state their key rules', () => {
   }
 });
 
+test('non-interactive apply allows the stamp and approved rewrites', () => {
+  const text = read(SKILL);
+  assert.ok(text.includes('The stamp line counts as an addition.'));
+  assert.ok(text.includes('A rewrite the prompt explicitly approves may be applied.'));
+});
+
+test('subagent strategy has one limit and keeps doc-reviewer in inline mode', () => {
+  const text = read(SKILL);
+  assert.ok(text.includes('When the strategy uses subagents, add `product-analyst`'));
+  assert.ok(text.includes('At most 5 subagents of any kind run at once.'));
+  assert.match(text, /`doc-reviewer` still runs in inline mode/);
+});
+
+test('doc-reviewer findings respect approval and are revalidated', () => {
+  assert.ok(read(SKILL).includes(
+    'Apply the findings to files created in this run, show further changes to existing files as diffs, then rerun `validate.mjs`.',
+  ));
+});
+
+test('published docs site has a non-interactive path', () => {
+  assert.ok(read('references/workflows/existing-repo.md').includes(
+    'Non-interactive and no folder supplied: do not write under `docs/`. Write `AGENTS.md` and `CLAUDE.md` only, and report the skipped documents.',
+  ));
+});
+
+test('new-project handles existing files', () => {
+  const text = read('references/workflows/new-project.md');
+  assert.match(text, /apply the Existing files table in \[existing-repo\]\(existing-repo\.md\), and interview only for what they leave open\./);
+});
+
+test('update finds scopes past the scope cap', () => {
+  const text = read('references/workflows/update.md');
+  assert.ok(text.includes('When `workspaces.truncated` is true'));
+  assert.ok(text.includes("`git ls-files '*AGENTS.md'`"));
+});
+
 test('good examples are marked as shape only', () => {
   for (const name of RULE_FILES) {
     const text = read(`references/docs/${name}.md`);

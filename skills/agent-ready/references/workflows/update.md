@@ -1,6 +1,6 @@
 # Workflow: update
 
-Applies when the user asks to update or refresh. Handle each scope that has an `AGENTS.md`.
+Applies when the user asks to update or refresh. Handle each scope that has an `AGENTS.md`. When `workspaces.truncated` is true, find the rest with `git ls-files '*AGENTS.md'`, or by walking the folder outside git, and run `detect.mjs --scope` on each.
 
 ## Flow
 

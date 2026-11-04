@@ -42,6 +42,8 @@ Human-written content is never silently changed or removed. Each change below is
 
 When `publishedDocsSite` is not null, ask for a folder other than `docs/ai/`, because personas and memory could become public. Write there, and have `AGENTS.md` index the chosen paths.
 
+Non-interactive and no folder supplied: do not write under `docs/`. Write `AGENTS.md` and `CLAUDE.md` only, and report the skipped documents.
+
 ## Large repository
 
 When `recommendedStrategy` is `parallel` and there is no workspace:

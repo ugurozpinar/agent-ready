@@ -23,7 +23,7 @@ Both print JSON and write nothing. Exit `2` means usage or runtime failure; `val
 2. **Plan and confirm.** Show a table of scope, file, action (create, update, skip), and reason. Signals are hints; the user can override any of them. Nothing is written before approval.
 3. **Gather.** Analyze inline or through subagents, as described below. Ask the user for what code cannot reveal.
 4. **Write.** Read the document's rule file and template first. The main agent alone writes every file; subagents only return findings.
-5. **Validate and report.** Run `scripts/validate.mjs`, using `--skip-claude-bridge` if the user declined the bridge. Fix errors in generated content and rerun. Report an error from content the user chose to keep, and leave that content unchanged. Run `doc-reviewer`, or self-review when subagents are unavailable, and apply its findings to generated content. Report what was written, what remains `draft`, which questions are open, any scope not analyzed, and any suspicious content. Never commit.
+5. **Validate and report.** Run `scripts/validate.mjs`, using `--skip-claude-bridge` if the user declined the bridge. Fix errors in generated content and rerun. Report an error from content the user chose to keep, and leave that content unchanged. Run `doc-reviewer`, or self-review when subagents are unavailable. Apply the findings to files created in this run, show further changes to existing files as diffs, then rerun `validate.mjs`. Report what was written, what remains `draft`, which questions are open, any scope not analyzed, and any suspicious content. Never commit.
 
 ## Approval
 
@@ -68,13 +68,14 @@ If your environment supports subagents, delegate by giving a subagent the prompt
 
 | Situation | Strategy |
 |---|---|
-| `recommendedStrategy: inline` (small repository) | No subagents; work inline |
+| `recommendedStrategy: inline` (small repository) | No analyst subagents; work inline |
 | Large single repository | One `repo-analyst` for each of up to 5 subsystems, chosen by `hotDirs` and file count |
-| Monorepo | One `repo-analyst` per selected package, at most 5 concurrently |
+| Monorepo | One `repo-analyst` per selected package |
 | More than 20 packages | None selected by default; the plan proposes the 10 most active |
 
-- After scope selection, work inline when only one small scope remains.
-- Add `product-analyst` where `signals.product` is true, and `ui-analyst` where `signals.ui` is true.
+- After scope selection, work inline when only one small scope remains. `doc-reviewer` still runs in inline mode, because step 5 requires it.
+- When the strategy uses subagents, add `product-analyst` where `signals.product` is true, and `ui-analyst` where `signals.ui` is true.
+- At most 5 subagents of any kind run at once.
 - No subagent support: apply the same prompts yourself, one after another, and summarize after each scope.
 - Subagent failure: retry once, then inspect that scope yourself. If that also fails, list the scope as "not analyzed" in the final report.
 - Drop findings without `file:line` evidence, except where the prompt allows it.
@@ -92,7 +93,7 @@ If your environment supports subagents, delegate by giving a subagent the prompt
 ## Edge cases
 
 - **Non-interactive run, no instruction to apply:** print the plan and stop.
-- **Non-interactive run, instruction to apply:** the instruction approves the plan and diffs that only add. Write what the code supports and mark the rest `draft`. Print, without applying, any change that would rewrite or remove existing content, and any conflict between files.
+- **Non-interactive run, instruction to apply:** the instruction approves the plan and diffs that only add. The stamp line counts as an addition. A rewrite the prompt explicitly approves may be applied. Write what the code supports and mark the rest `draft`. Print, without applying, any other change that would rewrite or remove existing content, and any conflict between files.
 - **Non-interactive run on an empty repository:** stop unless the prompt supplies the answers.
 - **Interrupted run:** a rerun treats written files as existing files and continues.
 - **Dirty working tree:** allowed; the stamp records `HEAD`.
