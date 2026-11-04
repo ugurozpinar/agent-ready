@@ -27,6 +27,8 @@ ADRs, significant history (reverts, migrations, removed features), interview.
 - Personal preferences
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 ## Constraints
 

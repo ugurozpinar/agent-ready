@@ -26,6 +26,8 @@ README, landing pages, routes.
 - Feature lists that duplicate routes
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 # Product overview
 

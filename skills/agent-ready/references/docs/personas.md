@@ -26,6 +26,8 @@ Product docs, support notes, interview. Never code alone: routes and roles show 
 - Demographic filler: age, hobbies, invented biographies
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 # Personas
 

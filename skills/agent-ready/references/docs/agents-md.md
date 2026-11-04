@@ -18,7 +18,8 @@ Manifests, CI config, README, CONTRIBUTING, analyst findings.
 
 Filling the template:
 
-- Replace every `{{ar:...}}` marker. `{{ar:commit}}` is the `HEAD` commit at analysis time, or `none` outside git.
+- Replace every `{{ar:...}}` marker. `{{ar:commit}}` is the short 7-character hash of the `HEAD` commit at analysis time, or `none` outside git or before the first commit.
+- If there are no non-obvious rules, keep the `## Rules` heading and write `None yet.` Do not invent rules.
 - Remove the index line of every document that was skipped. Use the chosen paths if the user picked a folder other than `docs/ai/`.
 - Do not embed or import other documents. The index only says when to read them.
 - Monorepo: replace `{{ar:packages-rule}}` with this line, using a path or glob that covers the package files: "Before working in a package, read its `AGENTS.md` (`packages/*/AGENTS.md`)." Otherwise delete the marker's line.
@@ -34,6 +35,8 @@ Any rule agents must follow that the code does not show?
 - Generic advice such as "write clean code" or "add tests"
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 # Tally
 

@@ -28,6 +28,8 @@ UI strings, locale files, marketing copy.
 - Copies of strings that live in locale files, beyond the few quoted as examples
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 # Voice and tone
 

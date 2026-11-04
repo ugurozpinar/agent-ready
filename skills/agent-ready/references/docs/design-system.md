@@ -24,6 +24,8 @@ Where is the visual source of truth?
 - Component lists that repeat the component folder or Storybook
 
 ## Good example
+This example shows shape only. Its facts are invented, and nothing from it may be reused.
+
 ```markdown
 # Design system
 
