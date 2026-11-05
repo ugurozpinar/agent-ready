@@ -37,6 +37,14 @@ Run this in the root of the project you want to set up. It needs Node 22.20 or l
 npx skills add ugurozpinar/agent-ready
 ```
 
+Or install it as a Claude Code plugin from inside a session (Claude Code 2.1.275 or later):
+
+```
+/plugin install agent-ready --marketplace ugurozpinar/agent-ready
+```
+
+Upgrade a plugin install with `claude plugin update agent-ready@agent-ready`.
+
 <details>
 <summary>Choose agents, install paths, upgrade</summary>
 
@@ -50,7 +58,7 @@ Claude Code installs to `.claude/skills/` and Codex to `.agents/skills/`. agent-
 
 ## Usage
 
-Run `/agent-ready` in Claude Code or `$agent-ready` in Codex, or ask in plain language.
+Run `/agent-ready` in Claude Code or `$agent-ready` in Codex, or ask in plain language. A plugin install adds the plugin's name as a prefix, so `/agent-ready` below becomes `/agent-ready:agent-ready`.
 
 | Request | What runs |
 |---|---|
