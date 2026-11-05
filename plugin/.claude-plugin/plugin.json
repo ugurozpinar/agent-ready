@@ -8,6 +8,7 @@
   },
   "homepage": "https://github.com/ugurozpinar/agent-ready#readme",
   "repository": "https://github.com/ugurozpinar/agent-ready",
+  "icon": "https://github.com/ugurozpinar/agent-ready/raw/main/assets/logo.png",
   "license": "MIT",
   "keywords": ["agents", "agents-md", "claude-code", "codex", "documentation", "skills"]
 }
