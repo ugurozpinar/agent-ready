@@ -1,0 +1,13 @@
+{
+  "name": "agent-ready",
+  "version": "0.1.0",
+  "description": "Short, sourced context files for AI coding agents: AGENTS.md, a CLAUDE.md bridge, shared project memory and product docs.",
+  "author": {
+    "name": "Uğur Özpınar",
+    "url": "https://github.com/ugurozpinar"
+  },
+  "homepage": "https://github.com/ugurozpinar/agent-ready#readme",
+  "repository": "https://github.com/ugurozpinar/agent-ready",
+  "license": "MIT",
+  "keywords": ["agents", "agents-md", "claude-code", "codex", "documentation", "skills"]
+}

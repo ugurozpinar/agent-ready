@@ -1,0 +1,17 @@
+{
+  "name": "agent-ready",
+  "description": "Short, sourced context files for AI coding agents.",
+  "owner": {
+    "name": "Uğur Özpınar",
+    "url": "https://github.com/ugurozpinar"
+  },
+  "plugins": [
+    {
+      "name": "agent-ready",
+      "source": "./",
+      "description": "Makes a repository ready for AI coding agents: creates or updates AGENTS.md, a CLAUDE.md bridge, shared project memory and product docs.",
+      "homepage": "https://github.com/ugurozpinar/agent-ready#readme",
+      "category": "documentation"
+    }
+  ]
+}
