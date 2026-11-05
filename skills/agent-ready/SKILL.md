@@ -41,7 +41,7 @@ Take `state` from `detect.mjs`.
 | None | `single` | [existing-repo](references/workflows/existing-repo.md) |
 | None | `monorepo` | [monorepo](references/workflows/monorepo.md) |
 | A document name | Any | The workflow for that `state`, limited to that document |
-| A path | Any | The workflow for that `state`, limited to that scope; pass `--scope <path>` to both scripts |
+| A path | Any | The workflow for that `state`, limited to that scope; add `--scope <path>` to both scripts |
 
 - A document name or path limits the whole pipeline to that target. The plan also lists any `AGENTS.md` line the target needs.
 - Document names: `agents-md`, `ai-memory`, `voice-and-tone`, `personas`, `product-overview`, `design-system`.
