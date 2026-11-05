@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readdir, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, rename, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,6 +36,10 @@ export async function makeRepo(files, { git: useGit = false, prefix = 'agent-rea
 export async function copyFixture(name, { git: useGit = true } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'agent-ready-fx-'));
   await cp(join(ROOT, 'tests/fixtures', name), dir, { recursive: true });
+  // Package-manager files are stored as `<name>.fixture` so the plugin does not ship them under their real names.
+  for (const rel of await readdir(dir, { recursive: true })) {
+    if (rel.endsWith('.fixture')) await rename(join(dir, rel), join(dir, rel.slice(0, -'.fixture'.length)));
+  }
   if (useGit) {
     git(dir, ['init', '-q']);
     commitAll(dir, 'initial commit');

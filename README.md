@@ -58,7 +58,7 @@ Claude Code installs to `.claude/skills/` and Codex to `.agents/skills/`. agent-
 
 ## Usage
 
-Run `/agent-ready` in Claude Code or `$agent-ready` in Codex, or ask in plain language. A plugin install adds the plugin's name as a prefix, so `/agent-ready` below becomes `/agent-ready:agent-ready`.
+Run `/agent-ready` in Claude Code, mention the agent-ready skill in Codex with its `$` prefix, or ask in plain language. A plugin install adds the plugin's name as a prefix, so `/agent-ready` below becomes `/agent-ready:agent-ready`.
 
 | Request | What runs |
 |---|---|

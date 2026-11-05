@@ -21,18 +21,18 @@ function stripComment(line) {
 
 const unquote = (s) => s.trim().replace(/^(["'])(.*)\1$/, '$2').trim();
 
-/** Items of a top-level `key:` list in a flat YAML file: the `- value` lines under it. */
-function yamlList(text, key) {
+/** Items of a top-level `field:` list in a flat YAML file: the `- value` lines under it. */
+function yamlList(text, field) {
   const items = [];
-  let inKey = false;
+  let inField = false;
   for (const raw of text.split('\n')) {
     const line = stripComment(raw).replace(/\s+$/, '');
     if (!line.trim()) continue;
     if (/^\S/.test(line)) {
-      inKey = line.startsWith(`${key}:`);
+      inField = line.startsWith(`${field}:`);
       continue;
     }
-    const m = inKey && /^\s*-\s+(.+)$/.exec(line);
+    const m = inField && /^\s*-\s+(.+)$/.exec(line);
     if (m) items.push(unquote(m[1]));
   }
   return items;
@@ -53,9 +53,9 @@ function tomlTable(text, header) {
   return lines.join('\n');
 }
 
-/** Quoted strings of `key = [ ... ]` (possibly multi-line) inside a table body. */
-function tomlStrings(body, key) {
-  const m = new RegExp(`(?:^|\\n)\\s*${key}\\s*=\\s*\\[([^\\]]*)\\]`).exec(body);
+/** Quoted strings of `field = [ ... ]` (possibly multi-line) inside a table body. */
+function tomlStrings(body, field) {
+  const m = new RegExp(`(?:^|\\n)\\s*${field}\\s*=\\s*\\[([^\\]]*)\\]`).exec(body);
   if (!m) return [];
   return [...m[1].matchAll(/"([^"]*)"|'([^']*)'/g)].map((x) => x[1] ?? x[2]);
 }
