@@ -15,8 +15,9 @@ test('install copies every skill file for both agents', {
   skip: process.env.AGENT_READY_SKIP_INSTALL_TEST === '1',
 }, async () => {
   const source = await makeRepo({ 'README.md': 'source' });
-  const skillDir = join(source, 'skills/agent-ready');
-  await cp(join(ROOT, 'skills/agent-ready'), skillDir, { recursive: true });
+  const skillDir = join(source, 'plugin/skills/agent-ready');
+  await cp(join(ROOT, 'plugin'), join(source, 'plugin'), { recursive: true });
+  await cp(join(ROOT, '.claude-plugin'), join(source, '.claude-plugin'), { recursive: true });
   for (const [rel, content] of Object.entries(probes)) {
     await mkdir(dirname(join(skillDir, rel)), { recursive: true });
     await writeFile(join(skillDir, rel), content);

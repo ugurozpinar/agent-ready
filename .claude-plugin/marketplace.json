@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "agent-ready",
-      "source": "./",
+      "source": "./plugin",
       "description": "Makes a repository ready for AI coding agents: creates or updates AGENTS.md, a CLAUDE.md bridge, shared project memory and product docs.",
       "homepage": "https://github.com/ugurozpinar/agent-ready#readme",
       "category": "documentation"

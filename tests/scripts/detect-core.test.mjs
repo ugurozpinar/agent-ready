@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { commitAll, envWithoutGit, makeRepo, ROOT, runDetect } from '../helpers.mjs';
 
-const lib = (name) => pathToFileURL(join(ROOT, 'skills/agent-ready/scripts/lib', name)).href;
+const lib = (name) => pathToFileURL(join(ROOT, 'plugin/skills/agent-ready/scripts/lib', name)).href;
 
 test('empty folder', async () => {
   const { code, json } = runDetect(await makeRepo({}));
@@ -157,7 +157,7 @@ test('walk survives a junction cycle', { timeout: 15_000 }, async (t) => {
 
 test('usage errors exit 2', async () => {
   const dir = await makeRepo({});
-  const none = spawnSync(process.execPath, [join(ROOT, 'skills/agent-ready/scripts/detect.mjs')], { cwd: dir });
+  const none = spawnSync(process.execPath, [join(ROOT, 'plugin/skills/agent-ready/scripts/detect.mjs')], { cwd: dir });
   assert.equal(none.status, 2);
   const missing = runDetect(join(dir, 'nope'), [], { cwd: dir });
   assert.equal(missing.code, 2);

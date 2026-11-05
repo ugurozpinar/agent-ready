@@ -4,8 +4,8 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { git } from '../../skills/agent-ready/scripts/lib/git.mjs';
-import { parseStamp } from '../../skills/agent-ready/scripts/lib/stamp.mjs';
+import { git } from '../../plugin/skills/agent-ready/scripts/lib/git.mjs';
+import { parseStamp } from '../../plugin/skills/agent-ready/scripts/lib/stamp.mjs';
 import { generateLegacy } from '../fixtures/generate-legacy.mjs';
 import { commitAll, copyFixture, makeRepo, runDetect } from '../helpers.mjs';
 

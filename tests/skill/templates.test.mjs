@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { makeRepo, ROOT, runValidate } from '../helpers.mjs';
 
-const SKILL = join(ROOT, 'skills/agent-ready');
+const SKILL = join(ROOT, 'plugin/skills/agent-ready');
 const STAMP = '<!-- agent-ready: v={{ar:version}} commit={{ar:commit}} -->';
 const PACKAGES_RULE = 'Before working in a package, read its `AGENTS.md` (`packages/*/AGENTS.md`).';
 

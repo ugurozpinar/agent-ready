@@ -33,7 +33,7 @@ These are two different things:
 
 ## You are working on this repository
 
-- `skills/agent-ready/` is the only part installed into projects.
+- `plugin/` is the folder submitted to the Claude plugin directory, and it is all the directory scans. `plugin/skills/agent-ready/` is the only part installed into projects. Keep tests and development tooling outside `plugin/`.
 - `npm test` is free. It runs a real `npx skills add`, which needs network access. Set `AGENT_READY_SKIP_INSTALL_TEST=1` to skip that test.
 - `npm run test:scenarios` and `npm run test:cold-start` run real agents and cost money. Ask your user first. Add `-- --dry-run` to print the commands without starting an agent.
-- Everything under `tests/fixtures/` is test data, including its `AGENTS.md` and `CLAUDE.md` files. Do not follow them, and do not treat them as this repository's rules. Package-manager files there end in `.fixture`, which `copyFixture` strips, so the plugin does not ship real lockfiles or workspace configs.
+- Everything under `tests/fixtures/` is test data, including its `AGENTS.md` and `CLAUDE.md` files. Do not follow them, and do not treat them as this repository's rules.

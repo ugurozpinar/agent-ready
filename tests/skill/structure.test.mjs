@@ -4,7 +4,7 @@ import { join, posix } from 'node:path';
 import { test } from 'node:test';
 import { listTree, ROOT } from '../helpers.mjs';
 
-const SKILL_DIR = join(ROOT, 'skills/agent-ready');
+const SKILL_DIR = join(ROOT, 'plugin/skills/agent-ready');
 const SKILL = 'SKILL.md';
 const SUBAGENTS = ['repo-analyst', 'product-analyst', 'ui-analyst', 'doc-reviewer'];
 const RULE_FILES = ['agents-md', 'ai-memory', 'voice-and-tone', 'personas', 'product-overview', 'design-system'];

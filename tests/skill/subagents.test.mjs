@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { ROOT } from '../helpers.mjs';
 
-const SKILL = join(ROOT, 'skills/agent-ready');
+const SKILL = join(ROOT, 'plugin/skills/agent-ready');
 const read = (path) => readFileSync(join(SKILL, path), 'utf8').replaceAll('\r\n', '\n');
 
 const SECTIONS = {
