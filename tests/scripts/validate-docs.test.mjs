@@ -48,6 +48,14 @@ test('known make and just targets', async () => {
   assert.deepEqual(r.json.errors, []);
 });
 
+test('just directives are not recipes', async () => {
+  for (const word of ['export', 'set', 'import', 'mod', 'alias']) {
+    const justfile = `${word} x := "a:b"\nbuild:\n  echo build\n`;
+    const r = await check({ ...agents(`Run \`just ${word}\`.`), justfile });
+    assert.deepEqual(ids(r), ['unknown-command'], word);
+  }
+});
+
 test('make without a Makefile', async () => {
   const r = await check(agents('Run `make build`.'));
   assert.deepEqual(ids(r), ['unknown-command']);

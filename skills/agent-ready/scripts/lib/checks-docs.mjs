@@ -27,6 +27,7 @@ const PM_BUILTINS = new Set((
 ).split(' '));
 const NPM_SCRIPT_ALIASES = new Set(['test', 'start', 'stop', 'restart']);
 const UNVERIFIABLE = /&&|\||;|--filter|workspace/;
+const JUST_DIRECTIVES = new Set(['export', 'set', 'import', 'mod', 'alias']);
 
 const prefixOf = (path) => (path === '.' ? '' : `${path}/`);
 const baseName = (path) => path.slice(path.lastIndexOf('/') + 1);
@@ -129,7 +130,7 @@ function makeTargets(text) {
 function justRecipes(text) {
   const recipes = new Set();
   for (const line of text.split('\n')) {
-    if (/^\s/.test(line) || /^[A-Za-z_][\w-]*\s*:?=/.test(line) || /^(export|set|import|mod|alias)\s/.test(line)) continue;
+    if (/^\s/.test(line) || /^[A-Za-z_][\w-]*\s*:?=/.test(line) || JUST_DIRECTIVES.has(/^(\S+)\s/.exec(line)?.[1])) continue;
     const m = /^@?([A-Za-z_][\w-]*)\b[^\n]*?:(?!=)/.exec(line);
     if (m) recipes.add(m[1]);
   }
